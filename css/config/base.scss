@@ -119,6 +119,144 @@ body {
     // }  
 }
 
+@mixin button-colored {
+    @include reset-button;
+    position: relative;
+    display: inline-block;
+    padding: px-to-rem(10) px-to-rem(20);
+    overflow: hidden;
+    transform: translateZ(0);
+    line-height: 150%;
+    color: currentColor;
+
+    @include viewport-tablet-min {
+        font-size: px-to-rem(16);
+    }
+    @include viewport-phone {
+        font-size: px-to-rem(14);
+    }
+
+    @include non-mobile-hover {
+        span {
+            color: var(--color-white);
+
+            svg {
+                transform: rotate(180deg);
+            }
+        }
+        
+
+        &::after {
+            transform: translate(0);
+        }
+    }
+
+    &:focus-visible {
+        span {
+            color: var(--color-white);
+        }
+        &::after {
+            transform: translate(0);
+        }
+    }
+
+    &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        border: 1px solid currentColor;
+    }
+
+    &::after {
+        content: '';
+        display: block;
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background-color: currentColor;
+        transform: translate(-100%, 0);
+        transform-origin: 0;
+        transition: transform 0.3s ease;
+    }
+
+    span {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        transition: color 0.3s ease;
+        pointer-events: none;
+
+        svg {
+            width: 100%;
+            height: auto;
+            transition: transform 0.3s;
+            transform-origin: center;
+
+            @include viewport-tablet-min {
+                max-width: px-to-rem(24);
+                margin-left: px-to-rem(14);
+            }
+            @include viewport-phone {
+                max-width: 18px;
+                margin-left: px-to-rem(10);
+            }
+
+            path {
+                stroke: currentColor;
+                transition: stroke 0.3s ease;
+            }
+        }
+    }
+}
+
+@mixin form-input-default {
+    width: 100%;
+    border: unset;
+    border-radius: 0;
+    -webkit-border-radius: 0;
+    -webkit-appearance: none;
+    border: 1px solid var(--color-grey-200);
+    background-color: transparent;
+    padding: unset;
+    
+    transition: border 0.3s ease;
+    
+    font-weight: 400;
+    color: var(--color-black);
+    
+    @include viewport-tablet-min {
+        padding: px-to-rem(18) px-to-rem(14);
+        font-size: px-to-rem(16);
+    }
+    
+    @include viewport-phone {
+        padding: px-to-rem(14) px-to-rem(12);
+        font-size: px-to-rem(14);
+    }
+
+    &::placeholder {
+        font-weight: 400;
+        color: var(--color-grey-300);
+
+        @include viewport-tablet-min {
+            font-size: px-to-rem(16);
+        }
+
+        @include viewport-phone {
+            font-size: px-to-rem(14);
+        }
+    }
+
+    @at-root label.incorrect input {
+        border-color: var(--color-error);
+    }
+}
+
 @mixin form-input {
     width: 100%;
     border: unset;
@@ -219,9 +357,16 @@ body {
     transform: unset !important;
 
     font-family: $font-family;
-    font-size: px-to-rem(14);
-    font-weight: 500;
-    color: var(--color-text-secondary);
+    font-weight: 400;
+    color: var(--color-black);
+
+    @include viewport-tablet-min {
+        font-size: px-to-rem(16);
+    }
+    
+    @include viewport-phone {
+        font-size: px-to-rem(14);
+    }
 
     select {
         display: none;
@@ -230,29 +375,50 @@ body {
     .select-items div,
     .select-selected {
         position: relative;
-        padding: px-to-rem(8) px-to-rem(5);
         cursor: pointer;
     }
-
+    
     .select-selected {
         //border-bottom: 1px solid var(--color-text-secondary);
-        background-color: var(--color-text-primary);
+        border: 1px solid var(--color-grey-200);
+        background-color: var(--color-white);
+
+        @include viewport-tablet-min {
+            padding: px-to-rem(18) px-to-rem(14);
+            font-size: px-to-rem(16);
+        }
+        
+        @include viewport-phone {
+            padding: px-to-rem(14) px-to-rem(12);
+            font-size: px-to-rem(14);
+        }
+
+        &.select-arrow-active {
+            border-bottom: none;
+        }
 
         &::before {
             content: '';
             position: absolute;
             top: 50%;
-            right: 0;
             width: px-to-rem(10);
             height: px-to-rem(10);
 
-            background-image: url(../assets/img/label-arrow-down.svg);
+            background-image: url(../assets/img/components/arrow-select.svg);
             background-repeat: no-repeat;
             background-position: center center;
             background-size: contain;
 
             transform: translate(0, -50%);
             transition: transform 0.3s ease;
+
+            @include viewport-tablet-min {
+                right: px-to-rem(14);
+            }
+            
+            @include viewport-phone {
+                right: px-to-rem(12);
+            }
 
             @at-root .select-selected.select-arrow-active::before {
                 transform: translate(0, -50%) rotate(180deg);
@@ -267,7 +433,9 @@ body {
         width: 100%;
         z-index: 3;
         //border-radius: px-to-rem(20);
-        background-color: var(--color-text-primary);
+        border: 1px solid var(--color-grey-200);
+        border-top: none;
+        background-color: var(--color-white);
         overflow: hidden;
         transition: opacity 0.3s ease, visibility 0.3s ease;
 
@@ -277,13 +445,17 @@ body {
         }
 
         div {
+            padding: px-to-rem(8);
             border-top: 1px solid transparent;
             border-bottom: 1px solid transparent;
             transition: border 0.3s ease;
 
             &.same-as-selected {
-                border-color: var(--color-text-secondary);
-                //background-color: var(--color-button);
+                color: var(--color-blue-200);
+                //border-color: var(--color-text-secondary);
+                @include mobile-device {
+                    background-color: var(--color-grey-010);
+                }
             }
         }
     }
@@ -295,7 +467,7 @@ body {
         display: var(--mobile);
         width: 100%;
         height: px-to-rem(42);
-        background-color: var(--color-button);
+        background-color: var(--color-grey-010);
         will-change: transform;
 
         @include viewport-tablet-max {
@@ -305,7 +477,8 @@ body {
 
     //.select-items div:hover,
     .same-as-selected {
-        border-color: var(--color-text-secondary);
+        color: var(--color-blue-200);
+        //border-color: var(--color-text-secondary);
         //background-color: var(--color-button);
     }
 }

@@ -36,9 +36,11 @@ document.addEventListener('DOMContentLoaded', function () {
   if (isMobile.any()) {
     document.querySelector('body').classList.add('v-mobile');
     document.querySelector('html').classList.add('v-mobile');
+    document.body.style.setProperty('--mobile', `none`);
   } else {
     document.querySelector('body').classList.add('v-desk');
     document.querySelector('html').classList.add('v-desk');
+    document.body.style.setProperty('--mobile', `block`);
   }
 
   //normal vh
@@ -109,6 +111,163 @@ document.addEventListener('DOMContentLoaded', function () {
     document.body.style.setProperty('--header-big', `${headerBigHeight}px`);
   });
 
+  function lerp(current, target, ease, approximationLeft = 0.001) {
+    const val = current * (1 - ease) + target * ease;
+    const diff = Math.abs(target - val);
+    if (diff <= approximationLeft) {
+      return target;
+    }
+    return val;
+  }
+
+  function stopAnimation(idAnimation) {
+    cancelAnimationFrame(idAnimation);
+  }
+
+  //custom-form-select
+
+  //animationFrame select-pointer
+  let selectPointerAnimationId;
+  const selectProgress = {
+    current: 0,
+    target: 0,
+  };
+
+  const selectPointerAnimate = (selectPointer, y) => {
+    if (!selectPointer) {
+      return;
+    }
+    if (isMobile.any()) {
+      //console.log('mobile');
+      selectPointer.style.display = 'none';
+      return;
+    }
+
+    selectProgress.target = y;
+    //selectProgress.current = selectProgress.target;
+    selectProgress.current = lerp(
+      selectProgress.current,
+      selectProgress.target,
+      0.15,
+      0.001
+    );
+    selectPointer.style.transform = `translateY(${selectProgress.current}px)`;
+
+    if (selectProgress.current === selectProgress.target) {
+      cancelAnimationFrame(selectPointerAnimationId);
+    } else {
+      selectPointerAnimate(selectPointer, y);
+    }
+  };
+
+  const selects = document.querySelectorAll('.custom-form-select');
+  const selectsLength = Array.from(selects).length;
+
+  Array.from(selects).forEach((select, index, selects) => {
+    const selectOriginal = select.querySelector('select');
+    const selectOriginalLength = selectOriginal.length;
+    //console.log(selectOriginal, selectOriginalLength);
+
+    /* For each element, create a new DIV that will act as the selected item: */
+    const selectedItem = document.createElement('DIV');
+    selectedItem.setAttribute('class', 'select-selected');
+    selectedItem.innerHTML =
+      selectOriginal.options[selectOriginal.selectedIndex].innerHTML;
+    select.appendChild(selectedItem);
+
+    /* For each element, create a new DIV that will contain the option list: */
+    const customOptionList = document.createElement('DIV');
+    customOptionList.setAttribute('class', 'select-items select-hide');
+
+    if (document.body.clientWidth >= 1200) {
+      const selectPointer = document.createElement('span');
+      selectPointer.setAttribute('class', 'select-pointer');
+      customOptionList.appendChild(selectPointer);
+
+      customOptionList.addEventListener('mousemove', (evt) => {
+        const rect = customOptionList.getBoundingClientRect();
+        const startY = rect.top;
+        const pointerCenter = selectPointer.getBoundingClientRect().height / 2;
+        const y = Math.min(
+          Math.max(evt.clientY - startY, pointerCenter),
+          rect.height - pointerCenter
+        );
+
+        const progress = y - pointerCenter;
+        //console.log(y);
+        selectPointerAnimationId = window.requestAnimationFrame(() =>
+          selectPointerAnimate(selectPointer, progress)
+        );
+      });
+    }
+
+    Array.from(selectOriginal).forEach((option, optionsIndex) => {
+      /* For each option in the original select element,
+    create a new DIV that will act as an option item: */
+      const customOption = document.createElement('DIV');
+      customOption.innerHTML = selectOriginal.options[optionsIndex].innerHTML;
+      customOption.addEventListener('click', function (e) {
+        /* When an item is clicked, update the original select box,
+        and the selected item: */
+        const select = this.parentNode.parentNode.querySelector('select');
+        const selectLength = select.length;
+        const customSelectedItem = this.parentNode.previousSibling;
+
+        Array.from(select).forEach(
+          (optionChange, indexOptionChange, selectArr) => {
+            if (selectArr[indexOptionChange].innerHTML === this.innerHTML) {
+              selectArr.selectedIndex = indexOptionChange;
+              customSelectedItem.innerHTML = this.innerHTML;
+
+              const activeOptions =
+                this.parentNode.querySelectorAll('.same-as-selected');
+              Array.from(activeOptions).forEach((activeOption) => {
+                activeOption.removeAttribute('class');
+              });
+
+              this.setAttribute('class', 'same-as-selected');
+            }
+          }
+        );
+
+        customSelectedItem.click();
+      });
+      customOptionList.appendChild(customOption);
+    });
+
+    select.appendChild(customOptionList);
+    selectedItem.addEventListener('click', function (e) {
+      /* When the select box is clicked, close any other select boxes,
+    and open/close the current select box: */
+      e.stopPropagation();
+      closeAllSelect(this);
+      this.nextSibling.classList.toggle('select-hide');
+      this.classList.toggle('select-arrow-active');
+    });
+  });
+
+  function closeAllSelect(element) {
+    /* A function that will close all select boxes in the document,
+  except the current select box: */
+    const arrNo = [];
+    const selectItems = document.querySelectorAll('.select-items');
+    const selectSelecteds = document.querySelectorAll('.select-selected');
+
+    Array.from(selectSelecteds).forEach((selected, index) => {
+      if (element === selected) {
+        arrNo.push(index);
+      } else {
+        selected.classList.remove('selected-arrow-active');
+      }
+    });
+
+    Array.from(selectItems).forEach((item, index) => {
+      if (arrNo.indexOf(index)) {
+        item.classList.add('select-hide');
+      }
+    });
+  }
+
   //search popup
   const searchButton = document.body.querySelector('.header__btn__search');
   const searchPopup = document.body.querySelector('.popup-search');
@@ -144,10 +303,11 @@ document.addEventListener('DOMContentLoaded', function () {
       defaults: { duration: 0.3, ease: 'power4.inOut' },
     });
     timelinePopup
-      .to(item, { display: 'block', duration: 0.01 })
+      .to(item, { display: 'flex', duration: 0.01 })
       .from(item, { opacity: 0 })
-      .to(item, { opacity: 1 })
-      .to(popupInner, { x: 0 });
+      //.from(popupInner, { x: 30 })
+      .to(item, { opacity: 1 });
+    //.to(popupInner, { x: 0 }, '<100%');
 
     return timelinePopup;
   };
@@ -155,8 +315,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const popupAnimations = {};
   const popups = document.querySelectorAll('.popup');
 
-  if (Array.from(popups).length !== 0) {
-    Array.from(popups).forEach((popup) => {
+  if (popups.length !== 0) {
+    popups.forEach((popup) => {
       const timeline = makeTimelinePopup(popup);
       timeline.pause();
       popupAnimations[popup.dataset.popupname] = timeline;
@@ -168,8 +328,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const openPopup = (evt) => {
     const popupClass = evt.target.dataset.popup;
-    const popup = document.querySelector(`.${popupClass}`);
+    const popup = document.querySelector(`[data-popupname=${popupClass}]`);
 
+    console.log(popupAnimations, popupClass, evt.target);
     popupAnimations[popupClass].play();
 
     popup.classList.add('_opened');
@@ -177,8 +338,8 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('body').classList.add('_lock');
   };
 
-  if (popupOpenBtns) {
-    Array.from(popupOpenBtns).forEach((item) => {
+  if (popupOpenBtns.length !== 0) {
+    popupOpenBtns.forEach((item) => {
       item.addEventListener('click', (evt) => {
         evt.preventDefault();
         openPopup(evt);
@@ -627,6 +788,72 @@ document.addEventListener('DOMContentLoaded', function () {
         separateContainers[index].dataset.activeSlide =
           activeSlideCount % 2 === 0 ? 'even' : 'odd';
       });
+    });
+  }
+
+  const sliderImgContainers = document.querySelectorAll(
+    '.slider-img-container'
+  );
+  const initSliders = [];
+
+  if (sliderImgContainers.length !== 0) {
+    sliderImgContainers.forEach((container) => {
+      const slider = container.querySelector('.slider-img');
+      if (!slider) {
+        return;
+      }
+
+      const paginationContainer = container.querySelector(
+        '.slider-img-pagination'
+      );
+
+      const navigationPrev = container.querySelector('.slider-img-prev');
+      const navigationNext = container.querySelector('.slider-img-next');
+
+      if (!paginationContainer || !navigationPrev || !navigationNext) {
+        return;
+      }
+
+      //if pagination counter
+      const isCounter = !!slider.dataset.counter;
+
+      //if thumb does exist
+      const sliderThumb = container.querySelector('.slider-img-thumb');
+      let swiperInitThumb;
+      if (sliderThumb) {
+        swiperInitThumb = new Swiper(sliderThumb, {
+          slidesPerView: 3,
+          spaceBetween: 10,
+
+          breakpoints: {
+            899: {
+              slidesPerView: 5,
+              spaceBetween: 30,
+            },
+          },
+        });
+      }
+
+      const swiperInit = new Swiper(slider, {
+        thumbs: {
+          swiper: swiperInitThumb && swiperInitThumb,
+        },
+
+        pagination: {
+          el: paginationContainer,
+          clickable: true,
+          type: isCounter ? 'fraction' : 'bullets',
+        },
+        navigation: {
+          nextEl: navigationNext,
+          prevEl: navigationPrev,
+        },
+
+        slidesPerView: 1,
+        spaceBetween: 30,
+      });
+
+      initSliders.push(swiperInit);
     });
   }
 });
