@@ -6085,22 +6085,22 @@ html:not(.v-mobile) .not-found-list__item:hover::before {
           transform: scale(1);
 }
 
-.slidedr-img-container {
+.slider-img-container {
   width: 100%;
   margin: 0 auto;
 }
 @media (min-width: 900px) {
-  .slidedr-img-container {
+  .slider-img-container {
     max-width: 45.625rem;
   }
 }
 @media (max-width: 899px) {
-  .slidedr-img-container {
+  .slider-img-container {
     max-width: 34.375rem;
   }
 }
 @media (max-width: 899px) and (max-width: 600px) {
-  .slidedr-img-container {
+  .slider-img-container {
     max-width: unset;
   }
 }
