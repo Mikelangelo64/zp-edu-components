@@ -685,6 +685,7 @@ section {
             position: absolute;
             top: 0;
             left: calc(-1 * var(--wrap));
+            z-index: -1;
             width: 100%;
             height: 100%;
             width: calc(100% + 2 * var(--wrap));
@@ -854,6 +855,7 @@ section {
     
     //.menu__item 
     &__item {
+        display: inline-block;
         color: inherit;
 
         @include viewport-desktop {
@@ -869,33 +871,77 @@ section {
             }
         }
 
+        @at-root .menu.menu__bottom & {
+            transition: padding 0.3s ease, margin 0.3s ease;
+            
+            @include viewport-desktop {
+                padding: px-to-rem(28) px-to-rem(30);
+                margin: px-to-rem(-28) px-to-rem(-30);
+            }
+            @include viewport-tablet-max {
+                padding: px-to-rem(28);
+                margin: px-to-rem(-28);
+            }
+        }
+
+        @at-root .header._scrolled .menu.menu__bottom & {
+            @include viewport-desktop {
+                padding: px-to-rem(18) px-to-rem(30);
+                margin: px-to-rem(-18) px-to-rem(-30);
+            }
+            @include viewport-tablet-max {
+                padding: px-to-rem(18) px-to-rem(28);
+                margin: px-to-rem(-18) px-to-rem(-28);
+            }
+        }
+
         &::before {
             position: absolute;
             top: 110%;
             left: 0;
             width: 100%;
             height: 1px;
-
+            
+            background-color: currentColor;
             transform: scaleX(0);
             transform-origin: 0% 50%;
             transition: transform 0.3s ease;
 
-            @include viewport-desktop {
+            @include non-mobile-device {
                 content: '';
             }
             
-            @at-root .menu.menu__top .menu__item::before {
-                background-color: var(--color-black);
-            }
+            // @at-root .menu.menu__top .menu__item::before {
+            //     background-color: var(--color-black);
+            // }
             
             @at-root .menu.menu__bottom .menu__item::before {
-                background-color: var(--color-white);
+                top: 0;
+                left: 0;
+                z-index: -1;
+                height: 100%;
+                background-color: var(--color-blue-100);
+                transform: scaleY(0);
+                transform-origin: 0% 100%;
+                transition: transform 0.3s ease, height 0.3s ease;
             }
 
             @at-root .menu__item:hover::before {
                 @include non-mobile-device {
                     transform: scaleX(1);
                 }
+            }
+            @at-root .menu__item:focus-visible::before {
+                transform: scaleX(1);
+            }
+
+            @at-root .menu.menu__bottom .menu__item:hover::before {
+                @include non-mobile-device {
+                    transform: scaleY(1);
+                }
+            }
+            @at-root .menu.menu__bottom .menu__item:focus-visible::before {
+                transform: scaleY(1);
             }
         }
     }

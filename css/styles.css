@@ -1425,6 +1425,7 @@ html:not(.v-mobile) .header__btn__search:hover svg > * {
   position: absolute;
   top: 0;
   left: calc(-1 * var(--wrap));
+  z-index: -1;
   width: 100%;
   height: 100%;
   width: calc(100% + 2 * var(--wrap));
@@ -1592,6 +1593,7 @@ html:not(.v-mobile) .menu-burger:hover::after {
 }
 
 .menu__item {
+  display: inline-block;
   color: inherit;
 }
 @media (min-width: 1200px) {
@@ -1607,12 +1609,43 @@ html:not(.v-mobile) .menu-burger:hover::after {
   }
 }
 
+.menu.menu__bottom .menu__item {
+  -webkit-transition: padding 0.3s ease, margin 0.3s ease;
+  transition: padding 0.3s ease, margin 0.3s ease;
+}
+@media (min-width: 1200px) {
+  .menu.menu__bottom .menu__item {
+    padding: 1.75rem 1.875rem;
+    margin: -1.75rem -1.875rem;
+  }
+}
+@media (max-width: 1199px) {
+  .menu.menu__bottom .menu__item {
+    padding: 1.75rem;
+    margin: -1.75rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .header._scrolled .menu.menu__bottom .menu__item {
+    padding: 1.125rem 1.875rem;
+    margin: -1.125rem -1.875rem;
+  }
+}
+@media (max-width: 1199px) {
+  .header._scrolled .menu.menu__bottom .menu__item {
+    padding: 1.125rem 1.75rem;
+    margin: -1.125rem -1.75rem;
+  }
+}
+
 .menu__item::before {
   position: absolute;
   top: 110%;
   left: 0;
   width: 100%;
   height: 1px;
+  background-color: currentColor;
   -webkit-transform: scaleX(0);
           transform: scaleX(0);
   -webkit-transform-origin: 0% 50%;
@@ -1622,22 +1655,44 @@ html:not(.v-mobile) .menu-burger:hover::after {
   transition: transform 0.3s ease;
   transition: transform 0.3s ease, -webkit-transform 0.3s ease;
 }
-@media (min-width: 1200px) {
-  .menu__item::before {
-    content: "";
-  }
-}
-.menu.menu__top .menu__item::before {
-  background-color: var(--color-black);
+html:not(.v-mobile) .menu__item::before {
+  content: "";
 }
 
 .menu.menu__bottom .menu__item::before {
-  background-color: var(--color-white);
+  top: 0;
+  left: 0;
+  z-index: -1;
+  height: 100%;
+  background-color: var(--color-blue-100);
+  -webkit-transform: scaleY(0);
+          transform: scaleY(0);
+  -webkit-transform-origin: 0% 100%;
+          transform-origin: 0% 100%;
+  -webkit-transition: height 0.3s ease, -webkit-transform 0.3s ease;
+  transition: height 0.3s ease, -webkit-transform 0.3s ease;
+  transition: transform 0.3s ease, height 0.3s ease;
+  transition: transform 0.3s ease, height 0.3s ease, -webkit-transform 0.3s ease;
 }
 
 html:not(.v-mobile) .menu__item:hover::before {
   -webkit-transform: scaleX(1);
           transform: scaleX(1);
+}
+
+.menu__item:focus-visible::before {
+  -webkit-transform: scaleX(1);
+          transform: scaleX(1);
+}
+
+html:not(.v-mobile) .menu.menu__bottom .menu__item:hover::before {
+  -webkit-transform: scaleY(1);
+          transform: scaleY(1);
+}
+
+.menu.menu__bottom .menu__item:focus-visible::before {
+  -webkit-transform: scaleY(1);
+          transform: scaleY(1);
 }
 
 .menu__lang {
